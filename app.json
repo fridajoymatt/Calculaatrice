@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "calculatrice_app",
+    "name": "CALCULATRICE",
     "slug": "calculatrice_app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -21,10 +21,16 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.frida.calculatrice"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "dae31cc7-7012-4d85-9e2d-8e8667855c6d"
+      }
     }
   }
 }
