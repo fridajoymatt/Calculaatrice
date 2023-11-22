@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -6,50 +7,93 @@ import {
   SafeAreaView,
   Image,
 } from "react-native";
-import React, { useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { FontAwesome5 } from "@expo/vector-icons";
-import { FlashList } from "@shopify/flash-list";
 import { MaterialIcons } from "@expo/vector-icons";
+import { FlashList } from "@shopify/flash-list";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 
-const number = [
-  { id: 1, title: "1" },
-  { id: 2, title: "2" },
-  { id: 3, title: "3" },
-  { id: 4, title: "4" },
-  { id: 5, title: "5" },
-  { id: 6, title: "6" },
-  { id: 7, title: "7" },
-  { id: 8, title: "8" },
-  { id: 9, title: "9" },
-  { id: 10, title: "0" },
-  { id: 11, title: "," },
-  { id: 12, title: "+" },
-  { id: 13, title: "=" },
-  { id: 14, title: "-" },
-  { id: 15, title: "/" },
-  { id: 16, title: "(" },
-  { id: 17, title: ")" },
-  { id: 18, title: "x" },
-  { id: 19, title: "%" },
-  { id: 20, title: "C" },
-];
-
 const Home = () => {
   const navigation = useNavigation();
-  // let asyncitem = AsyncStorage.getItem("calcul")
   const [calcul, setCalcul] = useState("");
-  const [opcalcul, setOpcalcul] = useState("");
+  const [operation, setOperation] = useState("");
+  const [premiereSaisie, setPremiereSaisie] = useState(false);
 
-  const numberConverter = parseInt(calcul);
+  const number = [
+    { id: 1, title: "1" },
+    { id: 2, title: "2" },
+    { id: 3, title: "3" },
+    { id: 4, title: "4" },
+    { id: 5, title: "5" },
+    { id: 6, title: "6" },
+    { id: 7, title: "7" },
+    { id: 8, title: "8" },
+    { id: 9, title: "9" },
+    { id: 10, title: "0" },
+    { id: 11, title: "," },
+    { id: 12, title: "+" },
+    { id: 13, title: "=" },
+    { id: 14, title: "-" },
+    { id: 15, title: "/" },
+    { id: 16, title: "(" },
+    { id: 17, title: ")" },
+    { id: 18, title: "x" },
+    { id: 19, title: "%" },
+    { id: 20, title: "C" },
+    { id: 21, title: "⌫" },
+  ];
+
+  const resoudre = (item) => {
+    const operateur = ["+", "-", "/", "x", "%", ",", "(", ")"];
+
+    if (item.title === "C") {
+      setCalcul("");
+      setOperation("");
+      setPremiereSaisie(false);
+    } else if (item.title === "⌫") {
+      setCalcul((precedentCalcul) => precedentCalcul.length > 0 ? precedentCalcul.slice(0, -1) : precedentCalcul);
+
+     
+      setPremiereSaisie(false);
+    } else {
+      if (item.title !== "=") {
+        if (calcul === "" && operateur.includes(item.title)) { // Affiche true si item.title est présent dans le tableau numbers
+          setCalcul("");
+          setOperation("Saisir un nombre avant une opération");
+          return;
+        }
+        const dernierChar = calcul.slice(-1);
+        if (!operateur.includes(dernierChar) && operateur.includes(item.title)) { // Verifie si la derniiere saisie n'est 
+          setCalcul((precedentCalcul) => precedentCalcul + item.title);
+        } else if (!operateur.includes(item.title)) {
+          setCalcul((precedentCalcul) =>
+            precedentCalcul === "0" ? item.title : precedentCalcul + item.title
+          );
+        }
+      } else {
+        try {
+          const resultat = eval(calcul); //calculer un expression mathematique 
+          setCalcul(String(resultat)); //convertir en string pour le ressortir
+          setOperation("");
+        } catch (error) {
+          console.error("Erreur lors de l'évaluation de l'expression :", error);
+          // Gérer l'erreur d'évaluation ici
+        }
+      }
+      if (!operateur.includes(item.title) && !premiereSaisie) {
+        if (item.title !== "0" && item.title !== ",") {-
+          setPremiereSaisie(true);
+        } else {
+          return;
+        }
+      }
+    }
+  };
 
   return (
     <>
       <SafeAreaView style={styles.container}>
         <StatusBar style="dark" backgroundColor="grey" />
-
         {/* Titre de l'application */}
         <View style={styles.titleContainer}>
           <Image
@@ -63,9 +107,9 @@ const Home = () => {
           />
           <Text style={styles.title}>CALCULATRICE</Text>
         </View>
-        {/* Tableau des opertations */}
+        {/* Tableau des opérations */}
         <View style={styles.OpertaionContainer}>
-          {/* button de l'historique */}
+          {/* Bouton de l'historique */}
           <TouchableOpacity onPress={() => navigation.navigate("history")}>
             <MaterialIcons
               name="history-toggle-off"
@@ -74,7 +118,7 @@ const Home = () => {
               color="black"
             />
           </TouchableOpacity>
-          {/*l'ecran des operations */}
+          {/* L'écran des opérations */}
           <View style={{ alignItems: "flex-end", padding: 5 }}>
             <Text
               style={{
@@ -83,12 +127,12 @@ const Home = () => {
                 flexWrap: "wrap",
               }}
             >
-              {[calcul, opcalcul]}
+              {`${calcul} ${operation}`}
             </Text>
           </View>
         </View>
 
-        {/* Touches de saisies des operations */}
+        {/* Touches de saisies des opérations */}
         <View style={styles.body}>
           <FlashList
             numColumns={3}
@@ -107,40 +151,16 @@ const Home = () => {
                   justifyContent: "center",
                   alignItems: "center",
                 }}
-                onPress={() => {
-                  item.title &&
-                    setCalcul((touche) =>
-                      touche === item.title ? "" : touche + item.title
-                    );
-
-                    item.title === "0" ||
-                      item.title === "," ||
-                      item.title === "+" ||
-                      item.title === "=" ||
-                      item.title === "-" ||
-                      item.title === "/" ||
-                      item.title === "(" ||
-                      item.title === ")" ||
-                      item.title === "x" ||
-                      item.title === "%" && setOpcalcul((touche) => 
-                      touche === item.title ? "" : item.title)
-                }}
+                onPress={() => resoudre(item)}
               >
                 <Text
                   style={{
                     color:
-                      item.id === 11 ||
-                      item.id === 12 ||
-                      item.id === 13 ||
-                      item.id === 14 ||
-                      item.id === 15 ||
-                      item.id === 16 ||
-                      item.id === 17 ||
-                      item.id === 18 ||
-                      item.id === 19 ||
-                      item.id === 20
-                        ? "#fff"
-                        : "yellow",
+                      item.id === 21
+                        ? "red"
+                        : item.id >= 11 && item.id <= 20
+                        ? "yellow"
+                        : "#fff",
                     textAlign: "center",
                     fontFamily: "Roboto_900Black",
                     fontSize: 25,
@@ -157,8 +177,6 @@ const Home = () => {
   );
 };
 
-export default Home;
-
 const styles = StyleSheet.create({
   container: {
     backgroundColor: "#FFF",
@@ -167,20 +185,17 @@ const styles = StyleSheet.create({
     marginRight: 10,
     justifyContent: "center",
   },
-
   titleContainer: {
     marginTop: 35,
     alignItems: "center",
     justifyContent: "center",
     flexDirection: "row",
   },
-
   title: {
     fontFamily: "Roboto_900Black",
     fontSize: 30,
     color: "red",
   },
-
   OpertaionContainer: {
     minHeight: 100,
     maxHeight: 150,
@@ -191,10 +206,11 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     overflow: "scroll",
   },
-
   body: {
     flex: 1,
     margin: 10,
     left: 12,
   },
 });
+
+export default Home;
