@@ -33,4 +33,4 @@ expo start or npx expo start
 
 |                               Screenshot 1                                | Screenshot 2 | Screenshot 3 |
 | :-----------------------------------------------------------------------: | :----------: | :----------: |
-| ![1] (https://github.com/fridajoymatt/Calculaatrice/screenshots/im01.jpg) |
+|![Alt text](screenshots/im01.jpg) | ![2](screenshots/im02.jpg) | ![Alt text](screenshots/im03.jpg)
